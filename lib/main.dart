@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quiz/data/network.dart';
+import 'package:quiz/views/loading_page/loading_page.dart';
 
 import 'views/qoute_page/qoute_page.dart';
 
@@ -14,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(),
-      home: QoutePage(),
+      home: const QoutePage(),
     );
   }
 }

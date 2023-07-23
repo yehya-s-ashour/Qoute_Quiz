@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class QuoteService {
   static Future<String> getImage() async {
-    String tag = 'buildings';
+    String tag = '';
     String url = 'https://random.imagecdn.app/v1/image?tag=$tag&format=json';
 
     http.Response response = await http.get(Uri.parse(url));

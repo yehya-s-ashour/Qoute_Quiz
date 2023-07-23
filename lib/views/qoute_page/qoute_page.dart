@@ -7,7 +7,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:quiz/data/network.dart';
+import 'package:quiz/views/loading_page/loading_page.dart';
+import 'package:quiz/views/qoute_page/widgets/author_card.dart';
 import 'package:share_plus/share_plus.dart';
+
+import 'widgets/qoute_card.dart';
 
 class QoutePage extends StatefulWidget {
   const QoutePage({super.key});
@@ -17,13 +21,15 @@ class QoutePage extends StatefulWidget {
 }
 
 class _QoutePageState extends State<QoutePage> {
-  String imageLink = '';
+  String? imageLink = '';
   String? quote = '';
   String? author = '';
-
+  GlobalKey globalKey = GlobalKey();
+  Uint8List? pngBytes;
   Future<void> fetchData() async {
     try {
       imageLink = await QuoteService.getImage();
+      print(imageLink);
       Map<String, String> quoteData = await QuoteService.getQuoteAuthor();
       quote = quoteData['quote'];
       author = quoteData['author'];
@@ -38,9 +44,6 @@ class _QoutePageState extends State<QoutePage> {
     fetchData();
     super.initState();
   }
-
-  GlobalKey globalKey = GlobalKey();
-  Uint8List? pngBytes;
 
   Future<void> _capturePng() async {
     RenderRepaintBoundary boundary =
@@ -97,89 +100,61 @@ class _QoutePageState extends State<QoutePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _capturePng,
-        label: const Text('Take screenshot'),
-        icon: const Icon(Icons.share_rounded),
-      ),
-      body: RepaintBoundary(
-          key: globalKey,
-          child: Scaffold(
-            body: Stack(
-              children: [
-                Positioned(
-                    child: imageLink == ''
-                        ? const Center(child: CircularProgressIndicator())
-                        : Opacity(
-                            opacity: 0.6,
-                            child: Image.network(
-                              '$imageLink',
-                              fit: BoxFit.cover,
-                              height: double.infinity,
-                            ),
-                          )),
-                Positioned(
-                  left: MediaQuery.of(context).size.width - 70,
-                  child: Container(
-                    margin: EdgeInsetsDirectional.only(end: 40, top: 40),
-                    padding: EdgeInsetsDirectional.only(
-                        start: 5, end: 10, bottom: 10),
-                    decoration: BoxDecoration(
-                        color: Colors.white30, shape: BoxShape.circle),
-                    child: IconButton(
-                      onPressed: () {
-                        fetchData();
-                      },
-                      icon: Icon(
-                        Icons.refresh,
-                        color: Colors.amber,
-                        size: 40,
-                      ),
-                    ),
-                  ),
-                ),
-                quote == ''
-                    ? const Center(child: CircularProgressIndicator())
-                    : Positioned(
-                        top: (MediaQuery.of(context).size.height / 2) - 70,
-                        left: (MediaQuery.of(context).size.width / 2) - 120,
-                        child: SizedBox(
-                          width: 300,
-                          child: Text(
-                            quote == '' ? '' : '$quote',
-                            maxLines: 5,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 35,
-                              fontWeight: FontWeight.w700,
+    return imageLink!.isEmpty
+        ? const LoadingPage()
+        : Scaffold(
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: _capturePng,
+              label: const Text('Take screenshot'),
+              icon: const Icon(Icons.share_rounded),
+            ),
+            body: RepaintBoundary(
+                key: globalKey,
+                child: Scaffold(
+                  body: Stack(
+                    children: [
+                      Positioned(
+                          child: imageLink == ''
+                              ? const Center(child: CircularProgressIndicator())
+                              : Opacity(
+                                  opacity: 0.6,
+                                  child: Image.network(
+                                    '$imageLink',
+                                    fit: BoxFit.cover,
+                                    height: double.infinity,
+                                  ),
+                                )),
+                      Positioned(
+                        left: MediaQuery.of(context).size.width - 70,
+                        child: Container(
+                          margin: EdgeInsetsDirectional.only(end: 40, top: 40),
+                          padding: EdgeInsetsDirectional.only(
+                              start: 5, end: 10, bottom: 10),
+                          decoration: BoxDecoration(
+                              color: Colors.white30, shape: BoxShape.circle),
+                          child: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                fetchData();
+                              });
+                            },
+                            icon: Icon(
+                              Icons.refresh,
+                              color: Colors.amber,
+                              size: 40,
                             ),
                           ),
                         ),
                       ),
-                author == ''
-                    ? const Center(child: CircularProgressIndicator())
-                    : Positioned(
-                        top: (MediaQuery.of(context).size.height / 2) + 150,
-                        left: (MediaQuery.of(context).size.width / 2) - 90,
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 190,
-                          height: 40,
-                          color: Colors.amber,
-                          child: Text(
-                            '$author',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ))
-              ],
-            ),
-          )),
-    );
+                      quote!.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : QouteCard(quote: quote!),
+                      author!.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : AuthorCard(author: author!),
+                    ],
+                  ),
+                )),
+          );
   }
 }
