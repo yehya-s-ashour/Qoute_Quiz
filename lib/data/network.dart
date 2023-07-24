@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 
 class QuoteService {
   static Future<String> getImage() async {
-    String tag = '';
-    String url = 'https://random.imagecdn.app/v1/image?tag=$tag&format=json';
+    String url =
+        'https://random.imagecdn.app/v1/image?tag=$getTag()&format=json';
 
     http.Response response = await http.get(Uri.parse(url));
 
@@ -14,6 +14,22 @@ class QuoteService {
       return imageLink;
     } else {
       throw Exception("Failed to load image");
+    }
+  }
+
+  static Future<String> getTag() async {
+    String tag = '';
+
+    String url = 'https://api.quotable.io/random';
+
+    http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      tag = jsonDecode(response.body)['tags'][0];
+      print(tag);
+      return tag;
+    } else {
+      throw Exception("Failed to load tag");
     }
   }
 
